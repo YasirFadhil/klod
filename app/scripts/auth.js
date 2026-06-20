@@ -60,7 +60,10 @@ registerForm.addEventListener('submit', async (e) => {
 
     const { data, error } = await supabaseClient.auth.signUp({
         email,
-        password
+        password,
+        options: {
+            emailRedirectTo: 'https://yasirfadhil.github.io/klod/'
+        }
     });
 
     if (error) {
