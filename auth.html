@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./app/styles/auth.css">
+    <title>Login</title>
+</head>
+<body>
+    
+    <div id="auth-container">
+
+    <form id="loginForm">
+        <h2>Masuk ke akun kamu</h2>
+        <input type="email" id="login-email" required placeholder="Email">
+        <input type="password" id="login-password" required placeholder="Password">
+        <button type="submit">Login</button>
+        <a href="#" id="to-register">Belum punya akun?</a>
+    </form>
+
+    <form id="registerForm" style="display:none">
+        <h2>Buat akun baru</h2>
+        <input type="email" id="reg-email" required placeholder="Email">
+        <input type="password" id="reg-password" required placeholder="Password">
+        <input type="password" id="reg-password-confirm" required placeholder="Konfirmasi Password">
+        <button type="submit">Daftar</button>
+        <a href="#" id="to-login">Sudah punya akun?</a>
+    </form>
+
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./app/scripts/config.js"></script>
+    <script src="./app/scripts/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./app/styles/dashboard.css">
+    <title>Dashboard</title>
+</head>
+
+<body>
+
+    <nav>
+        <span class="logo">☁️ CloudStorage</span>
+        <div>
+            <span id="user-email"></span>
+            <button id="logout-btn">Logout</button>
+        </div>
+    </nav>
+
+    <section id="upload-section">
+        <input type="file" id="fileInput">
+        <button id="uploadBtn">Upload</button>
+        <p id="upload-status"></p>
+    </section>
+
+    <section id="files-section">
+        <h2>File Kamu</h2>
+        <div id="file-list">
+        </div>
+    </section>
+
+    <!-- MODAL PREVIEW -->
+    <div id="preview-modal">
+        <div id="preview-backdrop"></div>
+        <div id="preview-content">
+            <button id="preview-close">✕</button>
+            <img id="preview-img" src="" alt="Preview">
+            <p id="preview-filename"></p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./app/scripts/config.js"></script>
+    <script src="./app/scripts/dashboard.js"></script>
+
+</body>
+</html>
