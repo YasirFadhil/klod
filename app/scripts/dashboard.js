@@ -17,10 +17,13 @@ function formatDate(isoString) {
 // ===== AMBIL ELEMENT HTML =====
 const userEmailEl = document.getElementById('user-email');
 const logoutBtn = document.getElementById('logout-btn');
+const storageUsageEl = document.getElementById('storage-usage');
 const fileInput = document.getElementById('fileInput');
-const uploadBtn = document.getElementById('uploadBtn');
 const uploadStatus = document.getElementById('upload-status');
 const fileList = document.getElementById('file-list');
+const dropZone = document.getElementById('drop-zone');
+const progressWrap = document.getElementById('progress-wrap');
+const progressBar = document.getElementById('progress-bar');
 
 // Modal preview
 const previewModal = document.getElementById('preview-modal');
@@ -29,13 +32,16 @@ const previewFilename = document.getElementById('preview-filename');
 const previewClose = document.getElementById('preview-close');
 const previewBackdrop = document.getElementById('preview-backdrop');
 
+// Sort state
+let currentSort = 'date';
+let currentUserId = null;
+
 // ===== HELPER: Cek apakah file gambar =====
 function isImage(fileName) {
     return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(fileName);
 }
 
 // ===== CEK AUTH =====
-// Jalankan saat halaman dibuka — kalau belum login, tendang ke auth.html
 async function init() {
     const { data: { session } } = await supabaseClient.auth.getSession();
 
@@ -44,42 +50,77 @@ async function init() {
         return;
     }
 
-    // Tampilkan email user di navbar
+    currentUserId = session.user.id;
     userEmailEl.textContent = session.user.email;
-
-    // Load daftar file
-    loadFiles(session.user.id);
+    loadFiles(currentUserId);
+    setupDragAndDrop();
+    setupSort();
 }
 
 // ===== UPLOAD FILE =====
-uploadBtn.addEventListener('click', async () => {
-    const file = fileInput.files[0];
+async function uploadFiles(files) {
+    if (!files || files.length === 0) return;
 
-    if (!file) {
-        uploadStatus.textContent = 'Pilih file dulu!';
-        return;
+    progressWrap.style.display = 'block';
+    progressBar.style.width = '0%';
+    uploadStatus.textContent = `Mengupload ${files.length} file...`;
+
+    let uploaded = 0;
+
+    for (const file of files) {
+        const filePath = `${currentUserId}/${file.name}`;
+        const { error } = await supabaseClient.storage
+            .from('files_gabut')
+            .upload(filePath, file, { upsert: true });
+
+        if (error) {
+            uploadStatus.textContent = `Gagal: ${file.name} — ${error.message}`;
+        } else {
+            uploaded++;
+            progressBar.style.width = `${(uploaded / files.length) * 100}%`;
+        }
     }
 
-    uploadStatus.textContent = 'Mengupload...';
+    uploadStatus.textContent = `${uploaded} dari ${files.length} file berhasil diupload!`;
+    fileInput.value = '';
+    setTimeout(() => { progressWrap.style.display = 'none'; }, 1500);
+    loadFiles(currentUserId);
+}
 
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    const userId = session.user.id;
-
-    // Simpan file di folder berdasarkan user ID supaya tiap user punya folder sendiri
-    const filePath = `${userId}/${file.name}`;
-
-    const { error } = await supabaseClient.storage
-        .from('files_gabut')
-        .upload(filePath, file, { upsert: true }); // upsert: true = timpa kalau nama sama
-
-    if (error) {
-        uploadStatus.textContent = 'Upload gagal: ' + error.message;
-    } else {
-        uploadStatus.textContent = 'Upload berhasil!';
-        fileInput.value = ''; // reset input file
-        loadFiles(userId);    // refresh daftar file
-    }
+// Trigger upload saat file dipilih lewat input
+fileInput.addEventListener('change', () => {
+    uploadFiles(fileInput.files);
 });
+
+// ===== DRAG & DROP =====
+function setupDragAndDrop() {
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('drag-over');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        uploadFiles(e.dataTransfer.files);
+    });
+}
+
+// ===== SORT =====
+function setupSort() {
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentSort = btn.dataset.sort;
+            loadFiles(currentUserId);
+        });
+    });
+}
 
 // ===== LOAD DAFTAR FILE =====
 async function loadFiles(userId) {
@@ -98,6 +139,18 @@ async function loadFiles(userId) {
         fileList.innerHTML = '<p>Belum ada file.</p>';
         return;
     }
+
+    // Hitung total usage
+    const totalBytes = data.reduce((sum, f) => sum + (f.metadata?.size || 0), 0);
+    storageUsageEl.textContent = `💾 ${formatSize(totalBytes)} digunakan`;
+
+    // Sort data
+    data.sort((a, b) => {
+        if (currentSort === 'name') return a.name.localeCompare(b.name);
+        if (currentSort === 'size') return (b.metadata?.size || 0) - (a.metadata?.size || 0);
+        // default: date (terbaru dulu)
+        return new Date(b.created_at) - new Date(a.created_at);
+    });
 
     // Tampilkan tiap file sebagai item di list
     fileList.innerHTML = '';

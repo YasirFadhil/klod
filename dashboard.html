@@ -13,22 +13,42 @@
     <nav>
         <span class="logo">☁️ CloudStorage</span>
         <div>
+            <span id="storage-usage"></span>
             <span id="user-email"></span>
             <button id="logout-btn">Logout</button>
         </div>
     </nav>
 
     <section id="upload-section">
-        <input type="file" id="fileInput">
-        <button id="uploadBtn">Upload</button>
+        <!-- Drag & Drop Zone -->
+        <div id="drop-zone">
+            <span id="drop-text">☁️ Drop file di sini atau</span>
+            <label for="fileInput">pilih file</label>
+            <input type="file" id="fileInput" multiple hidden>
+        </div>
+
+        <!-- Progress Bar -->
+        <div id="progress-wrap" style="display:none">
+            <div id="progress-bar"></div>
+        </div>
+
         <p id="upload-status"></p>
     </section>
 
     <section id="files-section">
-        <h2>File Kamu</h2>
+        <div id="files-header">
+            <h2>File Kamu</h2>
+            <div id="sort-controls">
+                <span>Urutkan:</span>
+                <button class="sort-btn active" data-sort="date">Tanggal</button>
+                <button class="sort-btn" data-sort="name">Nama</button>
+                <button class="sort-btn" data-sort="size">Ukuran</button>
+            </div>
+        </div>
         <div id="file-list">
         </div>
     </section>
+
 
     <!-- MODAL PREVIEW -->
     <div id="preview-modal">

@@ -46,6 +46,17 @@ registerForm.addEventListener('submit', async (e) => {
 
     const email = document.getElementById('reg-email').value;
     const password = document.getElementById('reg-password').value;
+    const confirm = document.getElementById('reg-password-confirm').value;
+
+    if (password !== confirm) {
+        alert('Password dan konfirmasi password tidak sama!');
+        return;
+    }
+
+    if (password.length < 6) {
+        alert('Password minimal 6 karakter!');
+        return;
+    }
 
     const { data, error } = await supabaseClient.auth.signUp({
         email,
